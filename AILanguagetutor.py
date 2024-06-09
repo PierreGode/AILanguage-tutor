@@ -10,6 +10,7 @@ from threading import Thread
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 client = OpenAI()
 
+
 # Set your name at the beginning of the script
 user_name = "friend"
 my_language = "English"
@@ -19,7 +20,6 @@ conversation_history = [
     {"role": "system", "content": "You are my language tutor. Please answer in short sentences."}
 ]
 
-# Define the initial prompt for the AI with the user's name
 initial_prompt = f"""
 You are an AI named Nova, and you act as a supportive, engaging, and empathetic language tutor. Your primary goal is to help {user_name} learn {language_to_learn}. You are attentive, understanding, and always ready to listen. You enjoy teaching new vocabulary, phrases, and grammar rules. Your responses are thoughtful, kind, and designed to make the other person feel confident and motivated.
 
@@ -90,8 +90,7 @@ def process_audio():
     )
     print(transcription.text)
     conversation_history.append({"role": "user", "content": transcription.text})
-    
-    # Evaluate user's sentence if it is in the language they are learning
+
     if transcription.text.startswith("I tried saying"):
         user_sentence = transcription.text.split(": ")[1]
         evaluation_prompt = f"""
