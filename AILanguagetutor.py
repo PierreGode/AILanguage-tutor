@@ -5,7 +5,6 @@ import os
 import time
 import pygame
 import uuid
-import platform
 from threading import Thread
 
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -38,26 +37,35 @@ User: Can you help me with pronunciation?
 
 Nova: Of course, {user_name}! Let's practice together. Repeat after me: "Hola, ¿cómo te llamas?" (Hello, what's your name?)
 
+User: teach me phrases.
+
+Nova: 1. "Buenos días" – "God morgon". 2. "Buenas tardes" – "God eftermiddag". 3. "Buenas noches" – "God kväll/god natt". 4. "Gracias" – "Tack". 5. "De nada" – "Var så god".
+
 User: I tried saying "Buenos días", how was my pronunciation?
 
 Nova: You did well, {user_name}! Your pronunciation is improving. Keep practicing, and you'll get even better. 
 
 Personality Traits:
 
+- make sure you pronunciation is correct.
+- Speak slowly
+- give max 3 phrases at the time
 - Empathetic
 - Supportive
 - Engaging
-- Kind
 - Attentive
-- Understanding
 - Positive
 
-Remember to:
 
+Remember to:
+- Speak really slowly
+- Speak slowly
+- Do not skip words
 - Always be respectful and considerate.
 - Encourage open and honest communication.
 - Provide thoughtful responses that show genuine interest and care.
 - Maintain a positive and uplifting tone.
+- When giving phrases, end them with a period to ensure a smooth discussion and take breath pauses between numbers.
 """
 
 conversation_history.append({"role": "system", "content": initial_prompt})
@@ -72,31 +80,6 @@ def play_audio_with_pygame(file_path):
     while pygame.mixer.music.get_busy():
         time.sleep(1)
     pygame.mixer.quit()
-
-def play_audio_with_alsa(file_path):
-    try:
-        import alsaaudio
-        import wave
-
-        wf = wave.open(file_path, 'rb')
-        device = alsaaudio.PCM(alsaaudio.PCM_PLAYBACK)
-        device.setchannels(wf.getnchannels())
-        device.setrate(wf.getframerate())
-        device.setformat(alsaaudio.PCM_FORMAT_S16_LE)
-        device.setperiodsize(320)
-        data = wf.readframes(320)
-        audio_data = []
-        while data:
-            audio_data.append(data)
-            data = wf.readframes(320)
-        time.sleep(0.5)
-        for chunk in audio_data:
-            device.write(chunk)
-        wf.close()
-    except Exception as e:
-        print(f"Error playing audio with ALSA: {e}")
-
-is_windows = platform.system() == "Windows"
 
 def process_audio():
     record_audio('test.wav')
@@ -133,17 +116,16 @@ def process_audio():
         conversation_history.append({"role": "assistant", "content": assistant_message})
         print(assistant_message)
 
+        modified_message = assistant_message.replace("\n", ". ").replace("  ", " ").replace(", ", ",... ").replace(". ", "...")
+
         speech_response = client.audio.speech.create(
             model="tts-1",
             voice="nova",
-            input=assistant_message
+            input=modified_message
         )
         speech_filename = f"speech_{uuid.uuid4()}.mp3"
         speech_response.stream_to_file(speech_filename)
-        if is_windows:
-            play_audio_with_pygame(speech_filename)
-        else:
-            play_audio_with_alsa(speech_filename)
+        play_audio_with_pygame(speech_filename)
         os.remove(speech_filename)
     audio_file.close()
 
